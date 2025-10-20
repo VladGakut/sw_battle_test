@@ -25,7 +25,7 @@ namespace sw::core
 
         // Unit management
         bool IsCellFree(const Position& pos) const;
-        std::shared_ptr<Unit> GetUnitAt(const Position& pos);
+        std::shared_ptr<Unit> GetUnitAt(const Position& pos) const;
         bool PlaceUnit(const Position& pos, const std::shared_ptr<Unit>& unit);
         bool RemoveUnit(const Position& pos) { return _unit_by_position.erase(pos) > 0; }
         bool MoveUnit(const Position& from, const Position& to);

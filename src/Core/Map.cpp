@@ -14,9 +14,9 @@ namespace sw::core
         return IsValidPosition(pos) && !_unit_by_position.contains(pos);    
     }
 
-    std::shared_ptr<Unit> Map::GetUnitAt(const Position& pos) {
+    std::shared_ptr<Unit> Map::GetUnitAt(const Position& pos) const {
         if (_unit_by_position.contains(pos)) {
-            return _unit_by_position[pos];
+            return _unit_by_position.at(pos);
         }
     
         return nullptr;

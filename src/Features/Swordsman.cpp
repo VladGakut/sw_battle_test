@@ -33,7 +33,7 @@ namespace sw::features
         }
 
         // idle
-        _current_action = "idle. No adjacent_enemies and can't make a move";
+        _current_action = "idle - no enemies and no movement target";
     }
 
 	void Swordsman::PerformCrushingBlow(const std::vector<std::shared_ptr<Unit>>& enemies) {
@@ -47,7 +47,11 @@ namespace sw::features
         const int damage = GetStatOrDefault(core::UnitStatType::Strength);
         target->TakeDamage(damage);
 
-        _current_action = "Crushing Blow from unit: " + std::to_string(_id) + " to unit " + std::to_string(target->GetId()) + 
+        _current_action = "Crushing Blow on unit " + std::to_string(target->GetId()) + 
             " for " + std::to_string(damage) + " damage";
+
+        if (!target->IsAlive()) {
+            _current_action += " - UNIT KILLED";
+        } 
     }
 }

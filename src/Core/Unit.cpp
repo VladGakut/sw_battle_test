@@ -10,8 +10,8 @@ namespace sw::core
 	Unit::Unit(int id, const Position& pos, bool can_move, bool can_attack) 
         : _id(id), _pos(pos), _is_alive(true), _can_move(can_move), _can_attack(can_attack) {}
 
-	int Unit::GetStatOrDefault(UnitStatType type, int default_value) {
-		return _stats.contains(type) ? _stats[type] : default_value;
+	int Unit::GetStatOrDefault(UnitStatType type, int default_value) const {
+		return _stats.contains(type) ? _stats.at(type) : default_value;
 	}
 
 	void Unit::SetStat(UnitStatType type, int new_value) {
