@@ -1,10 +1,10 @@
-#include <Game.h>
+#include <Core/Game.h>
 
 #include <ranges>
 #include <iostream>
 
 #include <Features/Swordsman.hpp>
-// #include "Features/Hunter.h" // TODO: need to add
+#include <Features/Hunter.hpp>
 
 namespace sw::core
 {
@@ -33,21 +33,23 @@ namespace sw::core
         std::cout << "UNIT_SPAWNED " << id << " " << position.x << " " << position.y << std::endl;
     }
 
-    /* void Game::spawnHunter(int id, const Position& position, int health, int agility, int strength, int range) {
-        if (units_by_id_.find(id) != units_by_id_.end()) {
+    void Game::SpawnHunter(int id, const Position& position, int health, int agility, int strength, int range) {
+        if (_units_by_id.find(id) != _units_by_id.end()) {
             std::cout << "ERROR: Unit with id " << id << " already exists" << std::endl;
             return;
         }
         
-        auto hunter = std::make_shared<Hunter>(id, position, health, agility, strength, range);
-        if (map_->placeUnit(position, hunter)) {
-            units_.push_back(hunter);
-            units_by_id_[id] = hunter;
-            std::cout << "UNIT_SPAWNED " << id << " " << position.x << " " << position.y << std::endl;
-        } else {
+        const auto hunter = std::make_shared<features::Hunter>(id, position, health, agility, strength, range);
+        if (!_map->PlaceUnit(position, hunter)) {
             std::cout << "ERROR: Cannot spawn unit at " << position.x << " " << position.y << std::endl;
+            return;
         }
-    } */
+
+        _units.push_back(hunter);
+        _units_by_id.emplace(id, hunter);
+        
+        std::cout << "UNIT_SPAWNED " << id << " " << position.x << " " << position.y << std::endl;
+    }
 
     void Game::MarchUnit(int id, const Position& target) {
         const auto unit = GetUnitById(id);

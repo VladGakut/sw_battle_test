@@ -1,11 +1,10 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 #include <unordered_map>
 
-#include <Map.hpp>
-#include <Unit.hpp>
+#include <Core/Map.hpp>
+#include <Core/Unit.hpp>
 
 namespace sw::core
 {
@@ -22,7 +21,7 @@ namespace sw::core
         
         void CreateMap(int width, int height);
         void SpawnSwordsman(int id, const Position& position, int health, int strength); // TODO: написать общий интерфейс, чтоб под каждого юнита не плодить новый метод
-        // void SpawnHunter(int id, const Position& position, int health, int agility, int strength, int range); // TODO: add hunter
+        void SpawnHunter(int id, const Position& position, int health, int agility, int strength, int range);
         void MarchUnit(int id, const Position& target);
         
         void RunSimulation();

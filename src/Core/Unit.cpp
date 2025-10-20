@@ -1,9 +1,9 @@
-#include <Unit.hpp>
+#include <Core/Unit.hpp>
 
 #include <iostream>
 #include <random>
 
-#include <Map.hpp>
+#include <Core/Map.hpp>
 
 namespace sw::core
 {
@@ -13,10 +13,6 @@ namespace sw::core
 	int Unit::GetStatOrDefault(UnitStatType type, int default_value) const {
 		return _stats.contains(type) ? _stats.at(type) : default_value;
 	}
-
-	void Unit::SetStat(UnitStatType type, int new_value) {
-        _stats[type] = new_value;
-    }
 
 	void Unit::TakeDamage(int damage) {
 		if (!HasStat(UnitStatType::Health)) {

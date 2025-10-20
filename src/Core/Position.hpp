@@ -1,7 +1,6 @@
 #pragma once
 
-#include <functional> // для std::hash
-#include <utility>
+#include <cmath>
 
 namespace sw::core
 {

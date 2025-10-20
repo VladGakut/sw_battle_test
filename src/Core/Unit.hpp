@@ -1,8 +1,11 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <vector>
+#include <memory>
 
-#include <Position.hpp>
+#include <Core/Position.hpp>
 
 namespace sw::core
 {

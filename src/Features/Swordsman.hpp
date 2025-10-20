@@ -5,6 +5,7 @@
 namespace sw::features 
 {
     class Swordsman : public core::Unit {
+    public:
         static constexpr const char* TypeName = "SWORDSMAN";
 
         Swordsman(int id, const core::Position& pos, int health, int strength);
