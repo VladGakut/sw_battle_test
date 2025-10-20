@@ -27,7 +27,7 @@ namespace sw::core
             return false;
         }
         
-        _unit_by_position.insert({pos, unit});
+        _unit_by_position.emplace(pos, unit);
 
         return true;
     }

@@ -51,7 +51,7 @@ namespace sw::core
         
         std::string GetCurrentAction() const { return _current_action; };
 
-        void AddStat(UnitStatType type, int value) { _stats.insert({type, value}); }
+        void AddStat(UnitStatType type, int value) { _stats.emplace(type, value); }
         bool HasStat(UnitStatType type) const { return _stats.contains(type); }
         int GetStatOrDefault(UnitStatType type, int default_value = 0) const;
         void SetStat(UnitStatType type, int new_value) { _stats[type] = new_value; }

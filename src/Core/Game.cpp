@@ -28,7 +28,7 @@ namespace sw::core
         }
         
         _units.push_back(swordsman);
-        _units_by_id.insert({id, swordsman});
+        _units_by_id.emplace(id, swordsman);
         
         std::cout << "UNIT_SPAWNED " << id << " " << position.x << " " << position.y << std::endl;
     }
