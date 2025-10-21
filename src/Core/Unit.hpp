@@ -34,7 +34,6 @@ namespace sw::core
 
         Stats _stats;
     public:
-        // TODO: Action
         Unit(int id, const Position& pos, const Stats& stats, bool can_move = true, bool can_attack = true);
         virtual ~Unit() = default;
 
