@@ -10,8 +10,6 @@ namespace sw
 	class EventLog
 	{
 	public:
-		// TODO: Хм, может лучше вместо шаблонного TEvent добавить интерфейс типа TLoggable
-		// у которого чисто виртуальный метод visit.
 		template <class TEvent>
 		void log(uint64_t tick, TEvent&& event)
 		{
