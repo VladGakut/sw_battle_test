@@ -5,6 +5,7 @@
 
 #include <Core/Map.hpp>
 #include <Core/Unit.hpp>
+#include <Core/IUnitFactory.hpp>
 
 namespace sw::core
 {
@@ -13,6 +14,7 @@ namespace sw::core
         std::unique_ptr<Map> _map;
         std::vector<std::shared_ptr<Unit>> _units; // для порядка ходов
         std::unordered_map<int, std::shared_ptr<Unit>> _units_by_id; // для оптимизации
+        std::unique_ptr<IUnitFactory> _unit_factory;
         bool _simulation_finished;
         int _simulation_round;
 
@@ -20,9 +22,10 @@ namespace sw::core
         Game();
         
         void CreateMap(int width, int height);
-        void SpawnSwordsman(int id, const Position& position, int health, int strength); // TODO: написать общий интерфейс, чтоб под каждого юнита не плодить новый метод
-        void SpawnHunter(int id, const Position& position, int health, int agility, int strength, int range);
+        void SpawnUnit(UnitType type, int id, const Position& position, const Stats& stats);
         void MarchUnit(int id, const Position& target);
+
+        void SetUnitFactory(std::unique_ptr<IUnitFactory> factory) { _unit_factory = std::move(factory); }
         
         void RunSimulation();
         bool IsSimulationFinished() const { return _simulation_finished; }

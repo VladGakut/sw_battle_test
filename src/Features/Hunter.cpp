@@ -6,12 +6,8 @@
 
 namespace sw::features 
 {
-    Hunter::Hunter(int id, const core::Position& position, int health, int agility, int strength, int range)
-        : Unit(id, position, true, true) {
-        AddStat(core::UnitStatType::Health, health);
-        AddStat(core::UnitStatType::Agility, agility);
-        AddStat(core::UnitStatType::Strength, strength);
-        AddStat(core::UnitStatType::Range, range);
+    Hunter::Hunter(int id, const core::Position& position, const core::Stats& stats)
+        : Unit(id, position, stats, true, true) {
     }
 
     void Hunter::PerformAction(core::Map& map) {
@@ -21,7 +17,7 @@ namespace sw::features
         
         // swift attack
         if (CanSwiftShoot(map)) {
-            const int range = GetStatOrDefault(core::UnitStatType::Range);
+            const int range = GetStats().range;
             const auto enemies_in_range = FindEnemiesInRange(map, 2, range);
 
             PerformSwiftShot(enemies_in_range);
@@ -37,7 +33,7 @@ namespace sw::features
         
         // move
         if (CanPerformMove()) {
-            MoveTo(GetTargetPosition(), map);
+            MoveTo(_target_pos, map);
             return;
         }
         
@@ -51,7 +47,7 @@ namespace sw::features
             return false;
         }
 
-        const int range = GetStatOrDefault(core::UnitStatType::Range);
+        const int range = _stats.range;
         const auto enemies_in_range = FindEnemiesInRange(map, 2, range);
         return !enemies_in_range.empty();
     }
@@ -64,13 +60,13 @@ namespace sw::features
             return;
         }
         
-        const int damage = GetStatOrDefault(core::UnitStatType::Agility);
+        const int damage = _stats.agility;
         target->TakeDamage(damage);
 
         std::cout << "UNIT_ATTACKED (SWIFT_SHOT), attackerUnitId=" << _id 
             << " targetUnitId=" << target->GetId() 
             << " damage=" << damage 
-            << " targetHp=" << target->GetStatOrDefault(core::UnitStatType::Health) << std::endl;
+            << " targetHp=" << target->GetStats().health << std::endl;
 
         if (!target->IsAlive()) {
             std::cout << "UNIT_DIED, unitId=" << target->GetId() << std::endl;
@@ -85,13 +81,13 @@ namespace sw::features
             return;
         }
         
-        const int damage = GetStatOrDefault(core::UnitStatType::Strength);
+        const int damage = _stats.strength;
         target->TakeDamage(damage);
 
         std::cout << "UNIT_ATTACKED (SHADOW_SHOT), attackerUnitId=" << _id 
             << " targetUnitId=" << target->GetId() 
             << " damage=" << damage 
-            << " targetHp=" << target->GetStatOrDefault(core::UnitStatType::Health) << std::endl;
+            << " targetHp=" << target->GetStats().health << std::endl;
 
         if (!target->IsAlive()) {
             std::cout << "UNIT_DIED, unitId=" << target->GetId() << std::endl;

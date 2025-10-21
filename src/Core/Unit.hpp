@@ -11,11 +11,16 @@ namespace sw::core
 {
     class Map;
 
-    enum class UnitStatType {
-        Health,
-        Strength,
-        Agility,
-        Range,
+    enum class UnitType {
+        Swordsman,
+        Hunter
+    };
+
+    struct Stats {
+        int health{0};
+        int strength{0};
+        int agility{0};
+        int range{0};
     };
 
     struct Unit {
@@ -27,10 +32,10 @@ namespace sw::core
         bool _can_move;
         bool _can_attack;
 
-        std::unordered_map<UnitStatType, int> _stats; // TODO: вынести всю логику в отдельный класс
+        Stats _stats;
     public:
         // TODO: Action
-        Unit(int id, const Position& pos, bool can_move = true, bool can_attack = true);
+        Unit(int id, const Position& pos, const Stats& stats, bool can_move = true, bool can_attack = true);
         virtual ~Unit() = default;
 
         int GetId() const { return _id; };
@@ -50,15 +55,13 @@ namespace sw::core
         void SetCanAttack(bool can_attack) { _can_attack = can_attack; }; 
         bool IsCanAttack() const { return _can_attack; };
         
-        void AddStat(UnitStatType type, int value) { _stats.emplace(type, value); }
-        bool HasStat(UnitStatType type) const { return _stats.contains(type); }
-        int GetStatOrDefault(UnitStatType type, int default_value = 0) const;
-        void SetStat(UnitStatType type, int new_value) { _stats[type] = new_value; }
+        const Stats& GetStats() const { return _stats; }
+        Stats& GetStats() { return _stats; }
 
         virtual void TakeDamage(int damage);
 
         virtual bool CanPerformMove() const;
-        virtual Position CalculateNextMove(const Map& map) const;
+        virtual Position CalculateNextMove(const Position& target, const Map& map) const;
         virtual bool MoveTo(const Position& target, Map& map);
 
         virtual void PerformAction(Map& map) = 0;

@@ -61,7 +61,8 @@ namespace sw::core
 	}
 
 	std::vector<std::shared_ptr<Unit>> Map::GetUnitsInRange(const Position& center, int minRange, int maxRange) const {
-		 std::vector<std::shared_ptr<Unit>> unitsInRange;
+	    std::vector<std::shared_ptr<Unit>> unitsInRange;
+        unitsInRange.reserve(_unit_by_position.size());
     
         for (const auto& [pos, unit] : _unit_by_position) {
             if (!unit->IsAlive()) {
@@ -73,6 +74,8 @@ namespace sw::core
                 unitsInRange.push_back(unit);
             }
         }
+
+        unitsInRange.shrink_to_fit();
             
         return unitsInRange;
 	}

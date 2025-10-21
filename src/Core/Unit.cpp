@@ -7,24 +7,19 @@
 
 namespace sw::core
 {
-	Unit::Unit(int id, const Position& pos, bool can_move, bool can_attack) 
-        : _id(id), _pos(pos), _is_alive(true), _can_move(can_move), _can_attack(can_attack) {}
-
-	int Unit::GetStatOrDefault(UnitStatType type, int default_value) const {
-		return _stats.contains(type) ? _stats.at(type) : default_value;
-	}
+	Unit::Unit(int id, const Position& pos,  const Stats& stats, bool can_move, bool can_attack) 
+        : _id(id), _pos(pos), _stats(stats), _is_alive(true), _can_move(can_move), _can_attack(can_attack) {}
 
 	void Unit::TakeDamage(int damage) {
-		if (!HasStat(UnitStatType::Health)) {
-			std::cout << "Error: UnitStatType::Health not found for unit with id: " << _id;
+		if (_stats.health <= 0) {
+			std::cout << "Error: Stats::Health not found for unit with id: " << _id;
 			return;
 		}
 
-
-		const auto current_hp = GetStatOrDefault(UnitStatType::Health);
+		const auto current_hp = _stats.health;
 		const auto new_hp = std::max(current_hp - damage, 0);
 
-		SetStat(UnitStatType::Health, new_hp);
+		_stats.health = new_hp;
 			
 		if (new_hp <= 0) {
 			_is_alive = false;
@@ -35,18 +30,18 @@ namespace sw::core
 		return _can_move && _is_alive && HasTargetPosition();
 	}
 
-	Position Unit::CalculateNextMove(const Map& map) const {
+	Position Unit::CalculateNextMove(const Position& target, const Map& map) const {
     	if (!CanPerformMove()) {
 			return false;
 		}
 
 		auto cells = map.GetValidAdjacentCells(_pos);
 		Position best_pos = _pos;
-		int best_distance = _pos.DistanceTo(_target_pos);
+		int best_distance = _pos.DistanceTo(target);
 		
 		for (const auto& cell : cells) {
 			if (map.IsCellFree(cell)) {
-				int distance = cell.DistanceTo(_target_pos);
+				int distance = cell.DistanceTo(target);
 				if (distance < best_distance) {
 					best_distance = distance;
 					best_pos = cell;
@@ -64,8 +59,14 @@ namespace sw::core
 			return false;
 		}
     
-		Position next_pos = CalculateNextMove(map);
-		if (next_pos != _pos && map.MoveUnit(_pos, next_pos)) {
+		Position next_pos = CalculateNextMove(target, map);
+
+		if (next_pos == _pos) {
+			std::cout << "Warning: Next step position is the same as the current one, unit_id: " << _id << std::endl;
+			return false;
+		}
+
+		if (map.MoveUnit(_pos, next_pos)) {
 			_pos = next_pos;
 
 			std::cout << "UNIT_MOVE_TO, unitId=" << _id << " x=" << _pos.x << " y=" << _pos.y << std::endl;
@@ -80,7 +81,7 @@ namespace sw::core
 		std::vector<std::shared_ptr<Unit>> enemies;
 		
 		for (const auto& unit : units_in_range) {
-			if (unit.get() != this && unit->IsAlive()) {
+			if (_id != unit->GetId() && unit->IsAlive()) {
 				enemies.push_back(unit);
 			}
 		}
@@ -96,7 +97,7 @@ namespace sw::core
 		static std::random_device rd;
 		static std::mt19937 gen(rd());
 		std::uniform_int_distribution<> dis(0, units.size() - 1);
-		
+
 		return units[dis(gen)];
 	}
 }
