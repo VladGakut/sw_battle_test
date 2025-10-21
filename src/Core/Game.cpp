@@ -5,22 +5,14 @@
 
 #include <Features/Swordsman.hpp>
 #include <Features/Hunter.hpp>
-#include <IO/Events/MapCreated.hpp>
-#include <IO/Events/MarchEnded.hpp>
-#include <IO/Events/MarchStarted.hpp>
-#include <IO/Events/UnitAttacked.hpp>
-#include <IO/Events/UnitDied.hpp>
-#include <IO/Events/UnitSpawned.hpp>
 
 namespace sw::core
 {
-    Game::Game() : _simulation_finished(false), _simulation_round(1) {
-        _event_log = std::make_shared<EventLog>();
-    }
+    Game::Game() : _simulation_finished(false), _simulation_round(1) {}
 
     void Game::CreateMap(int width, int height) {
         _map = std::make_unique<Map>(width, height);
-        _event_log->log(_simulation_round, io::MapCreated{(uint)width, (uint)height});
+        std::cout << "MAP_CREATED, width=" << width << " height=" << height << std::endl;
     }
 
     void Game::SpawnSwordsman(int id, const Position& position, int health, int strength) {
@@ -38,7 +30,7 @@ namespace sw::core
         _units.push_back(swordsman);
         _units_by_id.emplace(id, swordsman);
         
-       _event_log->log(_simulation_round, io::UnitSpawned{(uint)id, swordsman->GetTypeName(), (uint)position.x, (uint)position.y});
+        std::cout << "UNIT_SPAWNED, unitId=" << id << " x=" << position.x << " y=" << position.y << std::endl;
     }
 
     void Game::SpawnHunter(int id, const Position& position, int health, int agility, int strength, int range) {
@@ -56,7 +48,7 @@ namespace sw::core
         _units.push_back(hunter);
         _units_by_id.emplace(id, hunter);
         
-        _event_log->log(_simulation_round, io::UnitSpawned{(uint)id, hunter->GetTypeName(), (uint)position.x, (uint)position.y});
+        std::cout << "UNIT_SPAWNED, unitId=" << id << " x=" << position.x << " y=" << position.y << std::endl;
     }
 
     void Game::MarchUnit(int id, const Position& target) {
@@ -77,9 +69,7 @@ namespace sw::core
         }
         
         unit->SetTargetPosition(target);
-        _event_log->log(_simulation_round, io::MarchStarted{(uint)id, (uint)unit->GetPosition().x, (uint)unit->GetPosition().y, 
-            (uint)target.x, (uint)target.y
-        });
+        std::cout << "MARCH_UNIT, id=" << id << " target.x=" << target.x << " target.y=" << target.y << std::endl;
     }
 
     void Game::RunSimulation() {
@@ -88,10 +78,11 @@ namespace sw::core
             return;
         }
         
-        std::cout << "SIMULATION_STARTED" << std::endl;
+        std::cout << "\n---SIMULATION_STARTED---";
+        _simulation_round = 1;
         
         while (!IsSimulationFinished()) {
-            std::cout << "SIMULATION_ROUND_STARTED " << _simulation_round << std::endl;
+            std::cout << "\nSIMULATION_ROUND_STARTED, round: " << _simulation_round << std::endl;
             
             // Юниты в порядке создания
             for (auto& unit : _units) {
@@ -103,22 +94,15 @@ namespace sw::core
             CleanupDeadUnits();
             CheckSimulationEndCondition();
             
-            std::cout << "SIMULATION_ROUND_ENDED " << _simulation_round << std::endl;
+            std::cout << "SIMULATION_ROUND_ENDED" << std::endl;
             _simulation_round++;
         }
         
-        std::cout << "SIMULATION_ENDED" << std::endl;
+        std::cout << "---SIMULATION_ENDED--\n\n";
     }
 
     void Game::ProcessUnitTurn(const std::shared_ptr<Unit>& unit) {
-        std::cout << "ProcessUnitTurn Started with unit_id: " << unit->GetId() << std::endl;
         unit->PerformAction(*_map);
-
-        if (!unit->GetCurrentAction().empty()) {
-            std::cout << "UNIT_ACTION unit_id: " << unit->GetId() << " " << unit->GetCurrentAction() << std::endl;
-        }
-
-        std::cout << "ProcessUnitTurn Ended" << std::endl;
     }
 
     void Game::CleanupDeadUnits() {
@@ -136,8 +120,6 @@ namespace sw::core
                 
             _map->RemoveUnit(pos);
             _units_by_id.erase(id);
-                
-            _event_log->log(_simulation_round, io::UnitDied{(uint)id});
         }
 
         alive_units.shrink_to_fit();
@@ -160,7 +142,7 @@ namespace sw::core
         if (alive_ids.empty()) {
             std::cout << "DRAW" << std::endl;
         } else {
-            std::cout << "VICTORY! id:" << alive_ids[0] << std::endl;
+            std::cout << "VICTORY! unitId=" << alive_ids[0] << std::endl;
         }
     }
 

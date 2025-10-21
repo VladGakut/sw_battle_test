@@ -19,8 +19,6 @@ namespace sw::features
             return;
         }
         
-        _current_action.clear();
-        
         // swift attack
         if (CanSwiftShoot(map)) {
             const int range = GetStatOrDefault(core::UnitStatType::Range);
@@ -44,7 +42,7 @@ namespace sw::features
         }
         
         // idle
-        _current_action = "idle - no enemies and no movement target";
+        std::cout << "UNIT_IDLE, unitId=" << _id << std::endl;
     }
 
     bool Hunter::CanSwiftShoot(const core::Map& map) const {
@@ -62,38 +60,41 @@ namespace sw::features
         const auto target = SelectRandomUnit(enemies);
 
         if (target == nullptr || !target->IsAlive()) {
-            _current_action = "Swift Shot failed - no valid target";
-            std::cout << "Swift Shot failed - no valid target" << std::endl;
+            std::cout << "Error: Swift Shot failed - no valid target" << std::endl;
             return;
         }
         
         const int damage = GetStatOrDefault(core::UnitStatType::Agility);
         target->TakeDamage(damage);
-            
-        _current_action = "Swift Shot on unit " + std::to_string(target->GetId()) + 
-                            " for " + std::to_string(damage) + " damage";
-            
+
+        std::cout << "UNIT_ATTACKED (SWIFT_SHOT), attackerUnitId=" << _id 
+            << " targetUnitId=" << target->GetId() 
+            << " damage=" << damage 
+            << " targetHp=" << target->GetStatOrDefault(core::UnitStatType::Health) << std::endl;
+
         if (!target->IsAlive()) {
-            _current_action += " - UNIT KILLED";
-        }    
+            std::cout << "UNIT_DIED, unitId=" << target->GetId() << std::endl;
+        } 
     }
 
     void Hunter::PerformShadowShot(const std::vector<std::shared_ptr<Unit>>& enemies) {
         const auto target = SelectRandomUnit(enemies);
         
         if (target == nullptr || !target->IsAlive()) {
-            _current_action = "Shadow Strike failed - no valid target";
+            std::cout << "Error: Shadow Strike failed - no valid target";
             return;
         }
         
         const int damage = GetStatOrDefault(core::UnitStatType::Strength);
         target->TakeDamage(damage);
-            
-        _current_action = "Shadow Strike on unit " + std::to_string(target->GetId()) + 
-                            " for " + std::to_string(damage) + " damage";
-            
+
+        std::cout << "UNIT_ATTACKED (SHADOW_SHOT), attackerUnitId=" << _id 
+            << " targetUnitId=" << target->GetId() 
+            << " damage=" << damage 
+            << " targetHp=" << target->GetStatOrDefault(core::UnitStatType::Health) << std::endl;
+
         if (!target->IsAlive()) {
-            _current_action += " - UNIT KILLED";
-        }
+            std::cout << "UNIT_DIED, unitId=" << target->GetId() << std::endl;
+        } 
     }
 }

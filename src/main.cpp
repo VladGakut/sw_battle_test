@@ -34,12 +34,7 @@ int main(int argc, char** argv)
 	// Code for example...
 
 	core::Game game;
-	EventLog eventLog;
 	io::CommandParser parser;
-
-	game.SetEventLog(std::make_shared<EventLog>(eventLog));
-
-	std::cout << "Commands:\n";
 
 	parser.add<io::CreateMap>([&game](auto command) {
 		printDebug(std::cout, command); 
@@ -61,9 +56,11 @@ int main(int argc, char** argv)
 
 	parser.parse(file);
 
-	std::cout << "\n\nRun simulation Events:\n";
+	std::cout << "\n\nRunSimulation:\n";
 
 	game.RunSimulation();
+
+	EventLog eventLog;
 
 	std::cout << "\n\nEvents:\n";
 

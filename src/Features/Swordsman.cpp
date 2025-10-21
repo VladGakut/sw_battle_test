@@ -16,8 +16,6 @@ namespace sw::features
             return;
         }
 
-        _current_action.clear();
-
         const auto adjacent_enemies = FindEnemiesInRange(map, 1, 1);
 
         // attack
@@ -33,25 +31,27 @@ namespace sw::features
         }
 
         // idle
-        _current_action = "idle - no enemies and no movement target";
+        std::cout << "UNIT_IDLE, id=" << _id << std::endl;
     }
 
 	void Swordsman::PerformCrushingBlow(const std::vector<std::shared_ptr<Unit>>& enemies) {
         auto target = SelectRandomUnit(enemies);
         
         if (target == nullptr) {
-            std::cout << "Target for not found for CrushingBlow, unit: " << _id;
+            std::cout << "Error: Target for not found for CrushingBlow, unit: " << _id;
             return;
         }
 
         const int damage = GetStatOrDefault(core::UnitStatType::Strength);
         target->TakeDamage(damage);
 
-        _current_action = "Crushing Blow on unit " + std::to_string(target->GetId()) + 
-            " for " + std::to_string(damage) + " damage";
+        std::cout << "UNIT_ATTACKED (CRUSHING_BLOW), attackerUnitId=" << _id 
+            << " targetUnitId=" << target->GetId() 
+            << " damage=" << damage 
+            << " targetHp=" << target->GetStatOrDefault(core::UnitStatType::Health) << std::endl;
 
         if (!target->IsAlive()) {
-            _current_action += " - UNIT KILLED";
+            std::cout << "UNIT_DIED, unitId=" << target->GetId() << std::endl;
         } 
     }
 }

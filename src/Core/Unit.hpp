@@ -28,8 +28,6 @@ namespace sw::core
         bool _can_attack;
 
         std::unordered_map<UnitStatType, int> _stats; // TODO: вынести всю логику в отдельный класс
-        
-        std::string _current_action; // TODO: maybe use enum? UnitAction { Move, Attack, Iddle }
     public:
         // TODO: Action
         Unit(int id, const Position& pos, bool can_move = true, bool can_attack = true);
@@ -52,8 +50,6 @@ namespace sw::core
         void SetCanAttack(bool can_attack) { _can_attack = can_attack; }; 
         bool IsCanAttack() const { return _can_attack; };
         
-        std::string GetCurrentAction() const { return _current_action; };
-
         void AddStat(UnitStatType type, int value) { _stats.emplace(type, value); }
         bool HasStat(UnitStatType type) const { return _stats.contains(type); }
         int GetStatOrDefault(UnitStatType type, int default_value = 0) const;

@@ -16,7 +16,7 @@ namespace sw::core
 
 	void Unit::TakeDamage(int damage) {
 		if (!HasStat(UnitStatType::Health)) {
-			std::cout << "UnitStatType::Health not found for unit with id: " << _id;
+			std::cout << "Error: UnitStatType::Health not found for unit with id: " << _id;
 			return;
 		}
 
@@ -28,7 +28,6 @@ namespace sw::core
 			
 		if (new_hp <= 0) {
 			_is_alive = false;
-			_current_action = "died";
 		}
 	}
 
@@ -59,14 +58,17 @@ namespace sw::core
 	}
 
 	bool Unit::MoveTo(const Position& target, Map& map) {
+
 		if (!CanPerformMove()) {
+			std::cout << "Error: Can't perform the movement";
 			return false;
 		}
     
 		Position next_pos = CalculateNextMove(map);
 		if (next_pos != _pos && map.MoveUnit(_pos, next_pos)) {
 			_pos = next_pos;
-			_current_action = "moved to " + std::to_string(next_pos.x) + "," + std::to_string(next_pos.y);
+
+			std::cout << "UNIT_MOVE_TO, unitId=" << _id << " x=" << _pos.x << " y=" << _pos.y << std::endl;
 			return true;
 		}
 		
