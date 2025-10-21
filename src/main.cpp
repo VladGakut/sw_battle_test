@@ -1,3 +1,4 @@
+#include <Core/Game.h>
 #include <IO/Commands/CreateMap.hpp>
 #include <IO/Commands/March.hpp>
 #include <IO/Commands/SpawnHunter.hpp>
@@ -32,18 +33,39 @@ int main(int argc, char** argv)
 
 	// Code for example...
 
-	std::cout << "Commands:\n";
+	core::Game game;
+	EventLog eventLog;
 	io::CommandParser parser;
-	parser.add<io::CreateMap>([](auto command) { printDebug(std::cout, command); })
-		.add<io::SpawnSwordsman>([](auto command) { printDebug(std::cout, command); })
-		.add<io::SpawnHunter>([](auto command) { printDebug(std::cout, command); })
-		.add<io::March>([](auto command) { printDebug(std::cout, command); });
+
+	game.SetEventLog(std::make_shared<EventLog>(eventLog));
+
+	std::cout << "Commands:\n";
+
+	parser.add<io::CreateMap>([&game](auto command) {
+		printDebug(std::cout, command); 
+		game.CreateMap(command.width, command.height);
+	})
+	.add<io::SpawnSwordsman>([&game](auto command) { 
+		printDebug(std::cout, command); 
+		game.SpawnSwordsman(command.unitId, {(int)command.x, (int)command.y}, command.hp, command.strength);
+	})
+	.add<io::SpawnHunter>([&game](auto command) {
+		printDebug(std::cout, command); 
+		game.SpawnHunter(command.unitId, {(int)command.x, (int)command.y}, command.hp, 
+			command.agility, command.strength, command.range);
+	})
+	.add<io::March>([&game](auto command) { 
+		printDebug(std::cout, command); 
+		game.MarchUnit(command.unitId, {(int)command.targetX, (int)command.targetY});
+	});
 
 	parser.parse(file);
 
-	std::cout << "\n\nEvents:\n";
+	std::cout << "\n\nRun simulation Events:\n";
 
-	EventLog eventLog;
+	game.RunSimulation();
+
+	std::cout << "\n\nEvents:\n";
 
 	eventLog.log(1, io::MapCreated{10, 10});
 	eventLog.log(1, io::UnitSpawned{1, "Swordsman", 0, 0});

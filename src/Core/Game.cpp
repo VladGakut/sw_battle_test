@@ -5,14 +5,22 @@
 
 #include <Features/Swordsman.hpp>
 #include <Features/Hunter.hpp>
+#include <IO/Events/MapCreated.hpp>
+#include <IO/Events/MarchEnded.hpp>
+#include <IO/Events/MarchStarted.hpp>
+#include <IO/Events/UnitAttacked.hpp>
+#include <IO/Events/UnitDied.hpp>
+#include <IO/Events/UnitSpawned.hpp>
 
 namespace sw::core
 {
-    Game::Game() : _simulation_finished(false), _current_turn(0) {}
+    Game::Game() : _simulation_finished(false), _simulation_round(1) {
+        _event_log = std::make_shared<EventLog>();
+    }
 
     void Game::CreateMap(int width, int height) {
         _map = std::make_unique<Map>(width, height);
-        std::cout << "MAP_CREATED " << width << " " << height << std::endl;
+        _event_log->log(_simulation_round, io::MapCreated{(uint)width, (uint)height});
     }
 
     void Game::SpawnSwordsman(int id, const Position& position, int health, int strength) {
@@ -30,7 +38,7 @@ namespace sw::core
         _units.push_back(swordsman);
         _units_by_id.emplace(id, swordsman);
         
-        std::cout << "UNIT_SPAWNED " << id << " " << position.x << " " << position.y << std::endl;
+       _event_log->log(_simulation_round, io::UnitSpawned{(uint)id, swordsman->GetTypeName(), (uint)position.x, (uint)position.y});
     }
 
     void Game::SpawnHunter(int id, const Position& position, int health, int agility, int strength, int range) {
@@ -48,7 +56,7 @@ namespace sw::core
         _units.push_back(hunter);
         _units_by_id.emplace(id, hunter);
         
-        std::cout << "UNIT_SPAWNED " << id << " " << position.x << " " << position.y << std::endl;
+        _event_log->log(_simulation_round, io::UnitSpawned{(uint)id, hunter->GetTypeName(), (uint)position.x, (uint)position.y});
     }
 
     void Game::MarchUnit(int id, const Position& target) {
@@ -69,7 +77,9 @@ namespace sw::core
         }
         
         unit->SetTargetPosition(target);
-        std::cout << "MARCH_STARTED " << id << " " << target.x << " " << target.y << std::endl;
+        _event_log->log(_simulation_round, io::MarchStarted{(uint)id, (uint)unit->GetPosition().x, (uint)unit->GetPosition().y, 
+            (uint)target.x, (uint)target.y
+        });
     }
 
     void Game::RunSimulation() {
@@ -79,11 +89,9 @@ namespace sw::core
         }
         
         std::cout << "SIMULATION_STARTED" << std::endl;
-        _current_turn = 0;
         
         while (!IsSimulationFinished()) {
-            _current_turn++;
-            std::cout << "TURN_STARTED " << _current_turn << std::endl;
+            std::cout << "SIMULATION_ROUND_STARTED " << _simulation_round << std::endl;
             
             // Юниты в порядке создания
             for (auto& unit : _units) {
@@ -95,17 +103,22 @@ namespace sw::core
             CleanupDeadUnits();
             CheckSimulationEndCondition();
             
-            std::cout << "TURN_ENDED " << _current_turn << std::endl;
+            std::cout << "SIMULATION_ROUND_ENDED " << _simulation_round << std::endl;
+            _simulation_round++;
         }
         
         std::cout << "SIMULATION_ENDED" << std::endl;
     }
 
     void Game::ProcessUnitTurn(const std::shared_ptr<Unit>& unit) {
+        std::cout << "ProcessUnitTurn Started with unit_id: " << unit->GetId() << std::endl;
         unit->PerformAction(*_map);
+
         if (!unit->GetCurrentAction().empty()) {
-            std::cout << "UNIT_ACTION " << unit->GetId() << " " << unit->GetCurrentAction() << std::endl;
+            std::cout << "UNIT_ACTION unit_id: " << unit->GetId() << " " << unit->GetCurrentAction() << std::endl;
         }
+
+        std::cout << "ProcessUnitTurn Ended" << std::endl;
     }
 
     void Game::CleanupDeadUnits() {
@@ -124,7 +137,7 @@ namespace sw::core
             _map->RemoveUnit(pos);
             _units_by_id.erase(id);
                 
-            std::cout << "UNIT_DIED " << id << std::endl;
+            _event_log->log(_simulation_round, io::UnitDied{(uint)id});
         }
 
         alive_units.shrink_to_fit();
