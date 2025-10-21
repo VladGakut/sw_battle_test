@@ -1,5 +1,7 @@
 #include <Features/Hunter.hpp>
 
+#include <iostream>
+
 #include <Core/Unit.hpp>
 
 namespace sw::features 
@@ -46,15 +48,22 @@ namespace sw::features
     }
 
     bool Hunter::CanSwiftShoot(const core::Map& map) const {
-        // "Может стрелять только если в соседних клетках нет других юнитов"
-        return FindEnemiesInRange(map, 1, 1).empty();
+        const auto adjacent_enemies = FindEnemiesInRange(map, 1, 1);
+        if (!adjacent_enemies.empty()) {
+            return false;
+        }
+
+        const int range = GetStatOrDefault(core::UnitStatType::Range);
+        const auto enemies_in_range = FindEnemiesInRange(map, 2, range);
+        return !enemies_in_range.empty();
     }
 
     void Hunter::PerformSwiftShot(const std::vector<std::shared_ptr<Unit>>& enemies) {
         const auto target = SelectRandomUnit(enemies);
 
-        if (target || target->IsAlive()) {
+        if (target == nullptr || !target->IsAlive()) {
             _current_action = "Swift Shot failed - no valid target";
+            std::cout << "Swift Shot failed - no valid target" << std::endl;
             return;
         }
         
@@ -72,7 +81,7 @@ namespace sw::features
     void Hunter::PerformShadowShot(const std::vector<std::shared_ptr<Unit>>& enemies) {
         const auto target = SelectRandomUnit(enemies);
         
-        if (target || target->IsAlive()) {
+        if (target == nullptr || !target->IsAlive()) {
             _current_action = "Shadow Strike failed - no valid target";
             return;
         }
