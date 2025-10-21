@@ -5,48 +5,44 @@
 
 #include <Features/Swordsman.hpp>
 #include <Features/Hunter.hpp>
+#include <Features/UnitFactory.hpp>
 
 namespace sw::core
 {
-    Game::Game() : _simulation_finished(false), _simulation_round(1) {}
+    Game::Game() : _simulation_finished(false), _simulation_round(1) {
+        _unit_factory = std::make_unique<features::UnitFactory>();
+    }
 
     void Game::CreateMap(int width, int height) {
         _map = std::make_unique<Map>(width, height);
         std::cout << "MAP_CREATED, width=" << width << " height=" << height << std::endl;
     }
 
-    void Game::SpawnSwordsman(int id, const Position& position, int health, int strength) {
+    void Game::SpawnUnit(UnitType type, int id, const Position& position, const Stats& stats) {
         if (_units_by_id.contains(id)) {
             std::cout << "ERROR: Unit with id " << id << " already exists" << std::endl;
             return;
         }
+
+        if (_unit_factory == nullptr) {
+            std::cout << "ERROR: unit_factory == nullptr" << std::endl;
+            return;
+        }
         
-        const auto swordsman = std::make_shared<features::Swordsman>(id, position, health, strength);
-        if (!_map->PlaceUnit(position, swordsman)) {
+        const auto unit = _unit_factory->CreateUnit(type, id, position, stats);
+
+        if (_map == nullptr) {
+            std::cout << "ERROR: map == nullptr" << std::endl;
+            return;
+        }
+
+        if (!_map->PlaceUnit(position, unit)) {
             std::cout << "ERROR: Cannot spawn unit at " << position.x << " " << position.y << std::endl;
             return;
         }
         
-        _units.push_back(swordsman);
-        _units_by_id.emplace(id, swordsman);
-        
-        std::cout << "UNIT_SPAWNED, unitId=" << id << " x=" << position.x << " y=" << position.y << std::endl;
-    }
-
-    void Game::SpawnHunter(int id, const Position& position, int health, int agility, int strength, int range) {
-        if (_units_by_id.find(id) != _units_by_id.end()) {
-            std::cout << "ERROR: Unit with id " << id << " already exists" << std::endl;
-            return;
-        }
-        
-        const auto hunter = std::make_shared<features::Hunter>(id, position, health, agility, strength, range);
-        if (!_map->PlaceUnit(position, hunter)) {
-            std::cout << "ERROR: Cannot spawn unit at " << position.x << " " << position.y << std::endl;
-            return;
-        }
-
-        _units.push_back(hunter);
-        _units_by_id.emplace(id, hunter);
+        _units.push_back(unit);
+        _units_by_id.emplace(id, unit);
         
         std::cout << "UNIT_SPAWNED, unitId=" << id << " x=" << position.x << " y=" << position.y << std::endl;
     }
@@ -85,7 +81,7 @@ namespace sw::core
             std::cout << "\nSIMULATION_ROUND_STARTED, round: " << _simulation_round << std::endl;
             
             // Юниты в порядке создания
-            for (auto& unit : _units) {
+            for (const auto& unit : _units) {
                 if (unit->IsAlive()) {
                     ProcessUnitTurn(unit);
                 }

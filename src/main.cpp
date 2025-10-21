@@ -42,12 +42,26 @@ int main(int argc, char** argv)
 	})
 	.add<io::SpawnSwordsman>([&game](auto command) { 
 		printDebug(std::cout, command); 
-		game.SpawnSwordsman(command.unitId, {(int)command.x, (int)command.y}, command.hp, command.strength);
+		game.SpawnUnit(
+			core::UnitType::Swordsman,
+			command.unitId, 
+			{(int)command.x, (int)command.y}, 
+			core::Stats{.health = (int)command.hp, .strength = (int)command.strength}
+		);
 	})
 	.add<io::SpawnHunter>([&game](auto command) {
 		printDebug(std::cout, command); 
-		game.SpawnHunter(command.unitId, {(int)command.x, (int)command.y}, command.hp, 
-			command.agility, command.strength, command.range);
+		game.SpawnUnit(
+			core::UnitType::Hunter,
+			command.unitId, 
+			{(int)command.x, (int)command.y}, 
+			core::Stats{
+				.health = (int)command.hp,
+				.agility = (int)command.agility, 
+				.strength = (int)command.strength, 
+				.range = (int)command.range
+			}
+		);
 	})
 	.add<io::March>([&game](auto command) { 
 		printDebug(std::cout, command); 

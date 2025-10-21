@@ -8,7 +8,7 @@ namespace sw::features
     public:
         static constexpr const char* TypeName = "Hunter";
         
-        Hunter(int id, const core::Position& position, int health, int agility, int strength, int range);
+        Hunter(int id, const core::Position& position, const core::Stats& stats);
         
         void PerformAction(core::Map& map) override;
         std::string GetTypeName() const override { return TypeName; }
