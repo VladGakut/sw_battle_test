@@ -1,4 +1,5 @@
 #include <Core/Game.h>
+#include <Features/UnitFactory.hpp>
 #include <IO/Commands/CreateMap.hpp>
 #include <IO/Commands/March.hpp>
 #include <IO/Commands/SpawnHunter.hpp>
@@ -33,7 +34,7 @@ int main(int argc, char** argv)
 
 	// Code for example...
 
-	core::Game game;
+	core::Game game (std::make_unique<features::UnitFactory>());
 	io::CommandParser parser;
 
 	parser.add<io::CreateMap>([&game](auto command) {

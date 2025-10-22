@@ -19,7 +19,7 @@ namespace sw::core
         int _simulation_round;
 
     public:
-        Game();
+        Game(std::unique_ptr<IUnitFactory> factory = nullptr);
         
         void CreateMap(int width, int height);
         void SpawnUnit(UnitType type, int id, const Position& position, const Stats& stats);

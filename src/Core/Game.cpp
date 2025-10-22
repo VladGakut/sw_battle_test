@@ -9,10 +9,11 @@
 
 namespace sw::core
 {
-    Game::Game() : _simulation_finished(false), _simulation_round(1) {}
+	Game::Game(std::unique_ptr<IUnitFactory> factory) 
+        : _unit_factory(std::move(factory)), _simulation_finished(false), _simulation_round(1) {}
 
     void Game::CreateMap(int width, int height) {
-        _map = std::make_unique<Map>(width, height);
+		_map = std::make_unique<Map>(width, height);
         std::cout << "MAP_CREATED, width=" << width << " height=" << height << std::endl;
     }
 
