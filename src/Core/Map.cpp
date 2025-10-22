@@ -38,8 +38,9 @@ namespace sw::core
         }
 
         _unit_by_position.erase(from);
+        _unit_by_position.emplace(to, unit);
 
-        return PlaceUnit(to, unit);;
+        return true;
 	}
 
 	std::vector<Position> Map::GetValidAdjacentCells(const Position& pos, int radius) const {
