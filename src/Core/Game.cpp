@@ -9,9 +9,7 @@
 
 namespace sw::core
 {
-    Game::Game() : _simulation_finished(false), _simulation_round(1) {
-        _unit_factory = std::make_unique<features::UnitFactory>();
-    }
+    Game::Game() : _simulation_finished(false), _simulation_round(1) {}
 
     void Game::CreateMap(int width, int height) {
         _map = std::make_unique<Map>(width, height);
@@ -97,12 +95,9 @@ namespace sw::core
         std::cout << "---SIMULATION_ENDED--\n\n";
     }
 
-    void Game::ProcessUnitTurn(const std::shared_ptr<Unit>& unit) {
-        unit->PerformAction(*_map);
-    }
-
-    void Game::CleanupDeadUnits() {
-        std::vector<std::shared_ptr<Unit>> alive_units;
+	void Game::CleanupDeadUnits()
+	{
+		std::vector<std::shared_ptr<Unit>> alive_units;
         alive_units.reserve(_units.size());
 
         for (auto& unit : _units) {
@@ -121,9 +116,9 @@ namespace sw::core
         alive_units.shrink_to_fit();
 
         _units = std::move(alive_units);
-    }
+	}
 
-    void Game::CheckSimulationEndCondition() {
+	void Game::CheckSimulationEndCondition() {
        const auto alive_ids = _units 
             | std::views::filter([](const auto& unit) { return unit->IsAlive(); })
             | std::views::transform([](const auto& unit) { return unit->GetId(); })
@@ -143,6 +138,62 @@ namespace sw::core
     }
 
     std::shared_ptr<Unit> Game::GetUnitById(int id) {
-        return _units_by_id.contains(id) ? _units_by_id[id] : nullptr;
+        return _units_by_id.contains(id) ? _units_by_id.at(id) : nullptr;
     }
+
+    void Game::ProcessUnitTurn(const std::shared_ptr<Unit>& unit) {
+        if (!unit->IsAlive()) {
+            return;
+        }
+        
+        const auto center = unit->GetPosition();
+        const int min_range = 1;
+        const int max_range = std::max(_map->GetWidth(), _map->GetHeight());
+
+        const auto nearby_units = _map->GetUnitsInRange(center, min_range, max_range);
+
+        unit->PerformAction(nearby_units);
+
+        ProcessUnitMovement(unit);
+	}
+
+	void Game::ProcessUnitMovement(const std::shared_ptr<Unit>& unit) {
+        if (!unit->HasMoveTarget() || !unit->CanPerformMove()) {
+            return;
+        }
+        
+        const auto free_cells = GetFreeAdjacentCells(unit);
+        Position next_pos = unit->CalculateNextMove(unit->GetTargetPosition(), free_cells);
+        
+        TryMoveUnitToPosition(unit, next_pos);
+	}
+
+	std::vector<Position> Game::GetFreeAdjacentCells(const std::shared_ptr<Unit>& unit) const {
+		const auto all_cells = _map->GetValidAdjacentCells(unit->GetPosition());
+    
+        return all_cells 
+            | std::views::filter([this](const Position& pos) { return _map->IsCellFree(pos); })
+            | std::ranges::to<std::vector>();
+	}
+
+	bool Game::TryMoveUnitToPosition(const std::shared_ptr<Unit>& unit, const Position& target_pos) {
+		if (target_pos == unit->GetPosition()) {
+            return false; // Already at target position
+        }
+        
+        Position current_pos = unit->GetPosition();
+
+        if (!_map->MoveUnit(current_pos, target_pos)) {
+            std::cout << "Error: Failed to move unit to new position";
+            return false;
+        }
+        
+        unit->SetPosition(target_pos);
+
+        std::cout << "UNIT_MOVED, unitId=" << unit->GetId() 
+                    << " from=(" << current_pos.x << "," << current_pos.y << ")"
+                    << " to=(" << target_pos.x << "," << target_pos.y << ")" << std::endl;
+
+        return true;
+	}
 }

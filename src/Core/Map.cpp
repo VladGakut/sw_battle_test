@@ -15,11 +15,9 @@ namespace sw::core
     }
 
     std::shared_ptr<Unit> Map::GetUnitAt(const Position& pos) const {
-        if (_unit_by_position.contains(pos)) {
-            return _unit_by_position.at(pos);
-        }
-    
-        return nullptr;
+        return _unit_by_position.contains(pos)
+            ? _unit_by_position.at(pos)
+            : nullptr;
     }
 
     bool Map::PlaceUnit(const Position& pos, const std::shared_ptr<Unit>& unit) {
@@ -35,11 +33,13 @@ namespace sw::core
     bool Map::MoveUnit(const Position& from, const Position& to) {
         const auto unit = GetUnitAt(from);
 
-        if (unit == nullptr) {
+        if (!unit || !IsCellFree(to)) {
             return false;
         }
 
-        return PlaceUnit(to, unit);
+        _unit_by_position.erase(from);
+
+        return PlaceUnit(to, unit);;
 	}
 
 	std::vector<Position> Map::GetValidAdjacentCells(const Position& pos, int radius) const {

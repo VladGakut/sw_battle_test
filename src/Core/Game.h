@@ -36,5 +36,9 @@ namespace sw::core
         
     private:
         void ProcessUnitTurn(const std::shared_ptr<Unit>& unit);
+        void ProcessUnitMovement(const std::shared_ptr<Unit>& unit);
+
+        std::vector<Position> GetFreeAdjacentCells(const std::shared_ptr<Unit>& unit) const;
+        bool TryMoveUnitToPosition(const std::shared_ptr<Unit>& unit, const Position& target_pos);
     };
 }

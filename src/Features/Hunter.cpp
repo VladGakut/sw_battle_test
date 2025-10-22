@@ -2,54 +2,37 @@
 
 #include <iostream>
 
-#include <Core/Unit.hpp>
-
 namespace sw::features 
 {
     Hunter::Hunter(int id, const core::Position& position, const core::Stats& stats)
         : Unit(id, position, stats, true, true) {
     }
 
-    void Hunter::PerformAction(core::Map& map) {
+    void Hunter::PerformAction(const std::vector<std::shared_ptr<Unit>>& nearby_units) {
         if (!IsAlive()) {
             return;
         }
         
-        // swift attack
-        if (CanSwiftShoot(map)) {
-            const int range = GetStats().range;
-            const auto enemies_in_range = FindEnemiesInRange(map, 2, range);
+        const int min_range = 2;
+        const int max_range = _stats.range;
 
+        const auto adjacent_enemies = GetAdjacentValidEnemies(nearby_units);
+        const auto enemies_in_range = GetValidEnemiesInRange(nearby_units, min_range, max_range);
+
+        // swift attack
+        if (adjacent_enemies.empty() && !enemies_in_range.empty()) {
             PerformSwiftShot(enemies_in_range);
             return;
         }
         
         // shadow attack
-        const auto adjacent_enemies = FindEnemiesInRange(map, 1, 1);
         if (!adjacent_enemies.empty()) {
             PerformShadowShot(adjacent_enemies);
             return;
         }
         
-        // move
-        if (CanPerformMove()) {
-            MoveTo(_target_pos, map);
-            return;
-        }
-        
         // idle
         std::cout << "UNIT_IDLE, unitId=" << _id << std::endl;
-    }
-
-    bool Hunter::CanSwiftShoot(const core::Map& map) const {
-        const auto adjacent_enemies = FindEnemiesInRange(map, 1, 1);
-        if (!adjacent_enemies.empty()) {
-            return false;
-        }
-
-        const int range = _stats.range;
-        const auto enemies_in_range = FindEnemiesInRange(map, 2, range);
-        return !enemies_in_range.empty();
     }
 
     void Hunter::PerformSwiftShot(const std::vector<std::shared_ptr<Unit>>& enemies) {
