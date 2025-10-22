@@ -1,9 +1,8 @@
 #include <Core/Unit.hpp>
 
 #include <iostream>
+#include <ranges>
 #include <random>
-
-#include <Core/Map.hpp>
 
 namespace sw::core
 {
@@ -27,66 +26,47 @@ namespace sw::core
 	}
 
 	bool Unit::CanPerformMove() const {
-		return _can_move && _is_alive && HasTargetPosition();
+		return _can_move && _is_alive && HasMoveTarget();
 	}
 
-	Position Unit::CalculateNextMove(const Position& target, const Map& map) const {
+	Position Unit::CalculateNextMove(const Position& target, const std::vector<Position>& available_cells) const {
     	if (!CanPerformMove()) {
-			return false;
+			return _pos;
 		}
 
-		auto cells = map.GetValidAdjacentCells(_pos);
 		Position best_pos = _pos;
 		int best_distance = _pos.DistanceTo(target);
 		
-		for (const auto& cell : cells) {
-			if (map.IsCellFree(cell)) {
-				int distance = cell.DistanceTo(target);
-				if (distance < best_distance) {
-					best_distance = distance;
-					best_pos = cell;
-				}
+		for (const auto& cell : available_cells) {
+			int distance = cell.DistanceTo(target);
+			if (distance < best_distance) {
+				best_distance = distance;
+				best_pos = cell;
 			}
 		}
 		
 		return best_pos;
 	}
 
-	bool Unit::MoveTo(const Position& target, Map& map) {
+	std::vector<std::shared_ptr<core::Unit>> Unit::GetValidEnemiesInRange(
+		const std::vector<std::shared_ptr<core::Unit>>& nearby_units, int min_range, int max_range) const 
+	{
+		const auto is_in_range = [&id = this->_id, &pos = this->_pos, min_range, max_range](const auto& unit) {
+			if (id == unit->GetId() || !unit->IsAlive()) {
+				return false;
+			}
+			
+			const int distance = pos.DistanceTo(unit->GetPosition());
+			return distance >= min_range && distance <= max_range;
+		};
 
-		if (!CanPerformMove()) {
-			std::cout << "Error: Can't perform the movement";
-			return false;
-		}
-    
-		Position next_pos = CalculateNextMove(target, map);
-
-		if (next_pos == _pos) {
-			std::cout << "Warning: Next step position is the same as the current one, unit_id: " << _id << std::endl;
-			return false;
-		}
-
-		if (map.MoveUnit(_pos, next_pos)) {
-			_pos = next_pos;
-
-			std::cout << "UNIT_MOVE_TO, unitId=" << _id << " x=" << _pos.x << " y=" << _pos.y << std::endl;
-			return true;
-		}
-		
-		return false;
+		return nearby_units 
+			| std::views::filter(is_in_range) 
+			| std::ranges::to<std::vector>();
 	}
 
-	std::vector<std::shared_ptr<Unit>> Unit::FindEnemiesInRange(const Map& map, int min_range, int max_range) const {
-		const auto units_in_range = map.GetUnitsInRange(_pos, min_range, max_range);
-		std::vector<std::shared_ptr<Unit>> enemies;
-		
-		for (const auto& unit : units_in_range) {
-			if (_id != unit->GetId() && unit->IsAlive()) {
-				enemies.push_back(unit);
-			}
-		}
-		
-		return enemies;
+	std::vector<std::shared_ptr<Unit>> Unit::GetAdjacentValidEnemies(const std::vector<std::shared_ptr<Unit>>& nearby_units) const {
+		return GetValidEnemiesInRange(nearby_units, 1, 1);
 	}
 
 	std::shared_ptr<Unit> Unit::SelectRandomUnit(const std::vector<std::shared_ptr<Unit>>& units) const {

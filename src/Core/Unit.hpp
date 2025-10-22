@@ -9,8 +9,6 @@
 
 namespace sw::core
 {
-    class Map;
-
     enum class UnitType {
         Swordsman,
         Hunter
@@ -60,18 +58,21 @@ namespace sw::core
         virtual void TakeDamage(int damage);
 
         virtual bool CanPerformMove() const;
-        virtual Position CalculateNextMove(const Position& target, const Map& map) const;
-        virtual bool MoveTo(const Position& target, Map& map);
+        virtual Position CalculateNextMove(const Position& target, const std::vector<Position>& available_cells) const;
 
-        virtual void PerformAction(Map& map) = 0;
-        virtual std::string GetTypeName() const = 0;
+        virtual void PerformAction(const std::vector<std::shared_ptr<Unit>>& nearby_units) = 0;
 
         bool IsAtPosition(const Position& pos) const { return _pos == pos; }
-        bool HasTargetPosition() const { return _pos != _target_pos; }
+        bool HasMoveTarget() const { return _pos != _target_pos; }
 
     protected:
         // helpers
-        std::vector<std::shared_ptr<Unit>> FindEnemiesInRange(const Map& map, int min_range, int max_range) const;
         std::shared_ptr<Unit> SelectRandomUnit(const std::vector<std::shared_ptr<Unit>>& units) const;
+        
+        std::vector<std::shared_ptr<core::Unit>> GetValidEnemiesInRange(
+            const std::vector<std::shared_ptr<core::Unit>>& nearby_units,
+            int min_range, int max_range) const;
+        std::vector<std::shared_ptr<Unit>> GetAdjacentValidEnemies(
+            const std::vector<std::shared_ptr<Unit>>& nearby_units) const;
     };
 }

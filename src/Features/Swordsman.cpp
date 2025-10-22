@@ -8,22 +8,16 @@ namespace sw::features
     Swordsman::Swordsman(int id, const core::Position& position, const core::Stats& stats)
         : Unit(id, position, stats) {}
 
-	void Swordsman::PerformAction(core::Map& map) {
+	void Swordsman::PerformAction(const std::vector<std::shared_ptr<Unit>>& nearby_units) {
         if (!IsAlive()) {
             return;
         }
 
-        const auto adjacent_enemies = FindEnemiesInRange(map, 1, 1);
+        const auto adjacent_enemies = GetAdjacentValidEnemies(nearby_units);
 
         // attack
         if (!adjacent_enemies.empty()) {
             PerformCrushingBlow(adjacent_enemies);
-            return;
-        }
-
-        // move
-        if (CanPerformMove()) {
-            MoveTo(_target_pos, map);
             return;
         }
 

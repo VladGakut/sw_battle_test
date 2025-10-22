@@ -19,7 +19,7 @@ namespace sw::core
         int _simulation_round;
 
     public:
-        Game();
+        Game(std::unique_ptr<IUnitFactory> factory = nullptr);
         
         void CreateMap(int width, int height);
         void SpawnUnit(UnitType type, int id, const Position& position, const Stats& stats);
@@ -36,5 +36,9 @@ namespace sw::core
         
     private:
         void ProcessUnitTurn(const std::shared_ptr<Unit>& unit);
+        void ProcessUnitMovement(const std::shared_ptr<Unit>& unit);
+
+        std::vector<Position> GetFreeAdjacentCells(const std::shared_ptr<Unit>& unit) const;
+        bool TryMoveUnitToPosition(const std::shared_ptr<Unit>& unit, const Position& target_pos);
     };
 }

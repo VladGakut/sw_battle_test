@@ -6,12 +6,9 @@ namespace sw::features
 {
     class Swordsman : public core::Unit {
     public:
-        static constexpr const char* TypeName = "SWORDSMAN";
-
         Swordsman(int id, const core::Position& pos, const core::Stats& stats);
 
-        void PerformAction(core::Map& map) override;
-        std::string GetTypeName() const override { return TypeName; }
+        void PerformAction(const std::vector<std::shared_ptr<Unit>>& nearby_units) override;
 
     private:
         void PerformCrushingBlow(const std::vector<std::shared_ptr<Unit>>& enemies);
